@@ -1,44 +1,4 @@
-<!-- GFM-TOC -->
 
-* [一、数据类型](#一数据类型)
-    * [基本类型](#基本类型)
-    * [包装类型](#包装类型)
-    * [缓存池](#缓存池)
-* [二、String](#二string)
-    * [概览](#概览)
-    * [不可变的好处](#不可变的好处)
-    * [String, StringBuffer and StringBuilder](#string,-stringbuffer-and-stringbuilder)
-    * [String Pool](#string-pool)
-    * [new String("abc")](#new-string"abc")
-* [三、运算](#三运算)
-    * [参数传递](#参数传递)
-    * [float 与 double](#float-与-double)
-    * [隐式类型转换](#隐式类型转换)
-    * [switch](#switch)
-* [四、关键字](#四关键字)
-    * [final](#final)
-    * [static](#static)
-* [五、Object 通用方法](#五object-通用方法)
-    * [概览](#概览)
-    * [equals()](#equals)
-    * [hashCode()](#hashcode)
-    * [toString()](#tostring)
-    * [clone()](#clone)
-* [六、继承](#六继承)
-    * [访问权限](#访问权限)
-    * [抽象类与接口](#抽象类与接口)
-    * [super](#super)
-    * [重写与重载](#重写与重载)
-* [七、反射](#七反射)
-* [八、异常](#八异常)
-* [九、泛型](#九泛型)
-* [十、注解](#十注解)
-* [十一、特性](#十一特性)
-    * [Java 各版本的新特性](#java-各版本的新特性)
-    * [Java 与 C++ 的区别](#java-与-c-的区别)
-    * [JRE or JDK](#jre-or-jdk)
-* [参考资料](#参考资料)
-  <!-- GFM-TOC -->
 
 
 # 一、数据类型
@@ -46,13 +6,15 @@
 ## 基本类型
 
 - byte/8
-- char/16
+- **char/16**
 - short/16
 - int/32
 - float/32
 - long/64
 - double/64
 - boolean/\~
+
+![](https://camo.githubusercontent.com/d913ab9b3880feab7d326a0904caac5f5e285a56/687474703a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f31382d392d31352f38363733353531392e6a7067)
 
 boolean 只有两个值：true、false,JVM 会在编译时期将 boolean 类型的数据转换为 int，使用 1 来表示 true，0 表示 false。JVM 支持 boolean 数组，但是是通过读写 byte 数组来实现的，每个单元只占字节
 
@@ -218,6 +180,10 @@ String 不可变性天生具备线程安全，可以在多个线程中安全地�
 - String 不可变，因此是线程安全的
 - StringBuilder 不是线程安全的
 - StringBuffer 是线程安全的，内部使用 synchronized 进行同步
+
+**3.性能提升**
+
++ StringBuilder性能高于StringBuffer 10%~15%左右
 
 [StackOverflow : String, StringBuffer, and StringBuilder](https://stackoverflow.com/questions/2971315/string-stringbuffer-and-stringbuilder)
 
@@ -657,16 +623,22 @@ public String toString()
 
 public final native Class<?> getClass()
 
+// 对象被回收之前执行
 protected void finalize() throws Throwable {}
 
-public final native void notify()
+// native方法，并且不能重写。唤醒一个在此对象监视器上等待的线程(监视器相当于就是锁的概念)。如果有多个线程在等待只会任意唤醒一个。
+public final native void notify() 
 
+// native方法，并且不能重写。跟notify一样，唯一的区别就是会唤醒在此对象监视器上等待的所有线程，而不是一个线程。
 public final native void notifyAll()
 
+// native方法，并且不能重写。暂停线程的执行。注意：sleep方法没有释放锁，而wait方法释放了锁 。timeout是等待时间。
 public final native void wait(long timeout) throws InterruptedException
 
+// 多了nanos参数，这个参数表示额外时间（以毫微秒为单位，范围是 0-999999）。 所以超时的时间还需要加上nanos毫秒。
 public final void wait(long timeout, int nanos) throws InterruptedException
 
+// 跟之前的2个wait方法一样，只不过该方法一直等待，没有超时时间这个概念
 public final void wait() throws InterruptedException
 ```
 
@@ -1082,6 +1054,8 @@ public class AccessWithInnerClassExample {
 }
 ```
 
+> tips: 子类继承父类。子类具有父类的所有属性和方法，只不过父类的私有属性和方法子类无法访问
+
 ## 抽象类与接口
 
 **1. 抽象类**  
@@ -1349,6 +1323,59 @@ public static void main(String[] args) {
 }
 ```
 
+重写的概念中，有一个桥方法的定义。
+
+当父类的方法被子类重写时候，如果子类的方法返回值或者参数类型或者异常是父类方法的子类的时候，那么，就需要生成中间桥方法。
+
+```java
+public class ExtendsTest {
+    public List<String> getList() {
+        return new ArrayList<>();
+    }
+
+    public static void main(String[] args) {
+        SubExtendTest subExtendTest = new SubExtendTest();
+    }
+}
+
+class SubExtendTest extends ExtendsTest {
+    @Override
+    public ArrayList<String> getList() {
+        return new ArrayList<>();
+    }
+}
+```
+
+javap -c classname反编译后，可以看到，在子类中，一共有两个getList方法。
+
+```java
+class SubExtendTest extends ExtendsTest {
+  SubExtendTest();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method ExtendsTest."<init>":()V
+       4: return
+
+  public java.util.ArrayList<java.lang.String> getList();
+    Code:
+       0: new           #2                  // class java/util/ArrayList
+       3: dup
+       4: invokespecial #3                  // Method java/util/ArrayList."<init>":()V
+       7: areturn
+
+  public java.util.List getList();
+    Code:
+       0: aload_0
+       1: invokevirtual #4                  // Method getList:()Ljava/util/ArrayList;
+       4: areturn
+}
+
+```
+
+其中自动生成的getList返回值和父类方法的一样，然后在其中调用了我们自己实现的重写方法，这就是协变。
+
+这是编译器自动生成的，如果我们自己这样编码，是会有错误的。
+
 **2. 重载（Overload）**  
 
 存在于**同一个类或继承**中，指一个方法与已经存在的方法名称上相同，但是**参数类型、个数、顺序**至少有一个不同。
@@ -1501,6 +1528,10 @@ Java 注解是附加在代码中的一些元信息，用于一些工具在编译
 
 [What are the main differences between Java and C++?](http://cs-fundamentals.com/tech-interview/java/differences-between-java-and-cpp.php)
 
+## Java语言解释与编译共存
+
+java语言执执行时需要进行整体的编译，在编译的时候就需要Java解释器进行逐行的解释，才能得到.class字节码
+
 ## JRE or JDK
 
 - JRE：Java Runtime Environment，Java 运行环境的简称，为 Java 的运行提供了所需的环境。它是一个 JVM 程序，主要包括了 JVM 的标准实现和一些 Java 基本类库。
@@ -1510,6 +1541,7 @@ Java 注解是附加在代码中的一些元信息，用于一些工具在编译
 
 - Eckel B. Java 编程思想[M]. 机械工业出版社, 2002.
 - Bloch J. Effective java[M]. Addison-Wesley Professional, 2017.
+- [Java Guide](https://github.com/Snailclimb/JavaGuide/blob/master/docs/java/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.md ) 
 
  
 
