@@ -184,6 +184,79 @@ class Solution {
 }
 ```
 
+## [面试题55 - II. 平衡二叉树](https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/)
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public boolean isBalanced(TreeNode root) {
+        if(root == null) return true;
+        
+        return Math.abs(depth(root.left) - depth(root.right)) <= 1 && isBalanced(root.left) && isBalanced(root.right);
+    }
+
+    public int depth(TreeNode root) {
+        if(root == null) return 0;
+        
+        return Math.max(depth(root.left), depth(root.right)) + 1;
+    }
+}
+```
+
+## [面试题55 - I. 二叉树的深度](https://leetcode-cn.com/problems/er-cha-shu-de-shen-du-lcof/)
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public int maxDepth(TreeNode root) {
+        if(root == null) return 0;
+        return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
+    }
+}
+```
+
+## [面试题26. 树的子结构](https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/)
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public boolean isSubStructure(TreeNode A, TreeNode B) {
+        return (A != null && B != null) && (select(A, B) || isSubStructure(A.left, B) || isSubStructure(A.right, B));
+    }
+
+    public boolean select(TreeNode A, TreeNode B) {
+        if(B == null) return true;
+        if(A == null || A.val != B.val) return false;
+
+        return select(A.left, B.left) && select(A.right, B.right);
+    }
+}
+```
+
 # 字符串类
 
 ## [面试题48. 最长不含重复字符的子字符串](https://leetcode-cn.com/problems/zui-chang-bu-han-zhong-fu-zi-fu-de-zi-zi-fu-chuan-lcof/)
@@ -248,6 +321,91 @@ class Solution {
         }
 
         return Integer.max(maxLength, r - l);
+    }
+}
+```
+
+# 动态规划
+
+## [面试题47. 礼物的最大价值](https://leetcode-cn.com/problems/li-wu-de-zui-da-jie-zhi-lcof/)
+
+**代码简洁版**
+
+```java
+class Solution {
+    public int maxValue(int[][] grid) {
+        int rowLength = grid.length;
+        int colLength = grid[0].length;
+
+        int[][] arr = new int[rowLength + 1][colLength + 1];
+
+        for (int i = 1; i < arr.length; i++) {
+            for (int j = 1; j < arr[i].length; j++) {
+                arr[i][j] += Integer.max(arr[i - 1][j], arr[i][j - 1]) + grid[i - 1][j - 1];
+            }
+        }
+
+        return arr[rowLength][colLength];
+    }
+}
+```
+
+**普通**
+
+```java
+class Solution {
+    public int maxValue(int[][] grid) {
+        int rowLength = grid.length;
+        int colLength = grid[0].length;
+
+        for (int i = 0; i < rowLength; i++) {
+            for (int j = 0; j < colLength; j++) {
+                if( i == 0 && j == 0 ){
+                    // 第一行第一列
+                    continue;
+                }
+
+                if( i == 0) {
+                    // 第一行
+                    grid[i][j] += grid[i][j - 1];
+                }else if(j == 0) {
+                    // 第一列
+                    grid[i][j] += grid[i - 1][j];
+                } else {
+                    // 其它位置
+                    grid[i][j] = Integer.max(grid[i - 1][j], grid[i][j - 1]) + grid[i][j];
+                }
+            }
+        }
+        return grid[rowLength][colLength];
+    }
+}
+```
+
+**优化**
+
+```java
+class Solution {
+    public int maxValue(int[][] grid) {
+        int rowLength = grid.length;
+        int colLength = grid[0].length;
+
+        for (int i = 1; i < colLength; i++) {
+            grid[0][i] += grid[0][i - 1];
+        }
+
+        for (int i = 1; i < rowLength; i++) {
+            grid[i][0] += grid[i - 1][0];
+        }
+
+
+        for (int i = 1; i < rowLength; i++) {
+            for (int j = 1; j < colLength; j++) {
+                grid[i][j] = Integer.max(grid[i - 1][j], grid[i][j - 1]) + grid[i][j];
+
+            }
+        }
+        return grid[rowLength - 1][colLength - 1];
     }
 }
 ```
@@ -459,6 +617,31 @@ class Solution {
         }
 
         return ans;
+    }
+}
+```
+
+## [面试题61. 扑克牌中的顺子](https://leetcode-cn.com/problems/bu-ke-pai-zhong-de-shun-zi-lcof/)
+
+```java
+class Solution {
+    public boolean isStraight(int[] nums) {
+        Set<Integer> set = new HashSet<>();
+
+        int max = -Integer.MAX_VALUE;
+        int min = Integer.MAX_VALUE;
+
+        for (int i = 0; i < nums.length; i++) {
+            if(nums[i] == 0) {
+                continue;
+            }
+            if(set.contains(nums[i])) return false;
+            set.add(nums[i]);
+            if(nums[i] > max) max = nums[i];
+            if(nums[i] < min && nums[i] != 0) min = nums[i];
+        }
+
+        return max - min < 5;
     }
 }
 ```
