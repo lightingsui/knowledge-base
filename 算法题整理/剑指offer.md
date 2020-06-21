@@ -257,6 +257,46 @@ class Solution {
 }
 ```
 
+## [面试题07. 重建二叉树](https://leetcode-cn.com/problems/zhong-jian-er-cha-shu-lcof/)
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+   public  TreeNode buildTree(int[] preorder, int[] inorder) {
+        Map<Integer, Integer> map = new HashMap<>(inorder.length * 2);
+        for (int i = 0; i < inorder.length; i++) {
+            map.put(inorder[i], i);
+        }
+        
+        return curBuildTree(preorder, 0, preorder.length - 1, inorder, 0, inorder.length - 1, map);
+    }
+
+    public  TreeNode curBuildTree(int[] preorder, int fBegin, int fEnd, int[] inorder, int mBegin, int mEnd, Map<Integer, Integer> map) {
+        if(fBegin > fEnd || mBegin > mEnd) return null;
+        
+        TreeNode treeNode = new TreeNode(preorder[fBegin]);
+
+        if(fBegin == fEnd) return treeNode;
+
+        else {
+            int index = map.get(preorder[fBegin]);
+            treeNode.left = curBuildTree(preorder, fBegin + 1, fBegin + index - mBegin, inorder, mBegin, index - 1, map);
+            treeNode.right = curBuildTree(preorder, fBegin + index - mBegin + 1, fEnd, inorder, index + 1, mEnd, map);
+        }
+
+        return treeNode;
+    }
+}
+```
+
 # 字符串类
 
 ## [面试题48. 最长不含重复字符的子字符串](https://leetcode-cn.com/problems/zui-chang-bu-han-zhong-fu-zi-fu-de-zi-zi-fu-chuan-lcof/)
@@ -409,6 +449,56 @@ class Solution {
     }
 }
 ```
+
+## [面试题49. 丑数](https://leetcode-cn.com/problems/chou-shu-lcof/)
+
+```java
+class Solution {
+    public int nthUglyNumber(int n) {
+        if(n == 1) return 1;
+
+        int a = 0 ,b = 0, c = 0;
+        int[] res = new int[n];
+        res[0] = 1;
+
+        for (int i = 1; i < n; i++) {
+            int n1 = res[a] * 2;
+            int n2 = res[b] * 3;
+            int n3 = res[c] * 5;
+
+            res[i] = Math.min(Math.min(n1, n2), n3);
+
+            if(n1 == res[i]) a++;
+            if(n2 == res[i]) b++;
+            if(n3 == res[i]) c++;
+        }
+
+        return res[n -1];
+    }
+}
+```
+
+## [面试题50. 第一个只出现一次的字符](https://leetcode-cn.com/problems/di-yi-ge-zhi-chu-xian-yi-ci-de-zi-fu-lcof/)
+
+```java
+class Solution {
+    public char firstUniqChar(String s) {
+        Map<Character, Boolean> map = new HashMap<>(s.length() * 2);
+
+        for (int i = 0; i < s.length(); i++) {
+            map.put(s.charAt(i), !map.containsKey(s.charAt(i)));
+        }
+
+        for (int i = 0; i < s.length(); i++) {
+            if(map.get(s.charAt(i))) return s.charAt(i);
+        }
+
+        return ' ';
+    }
+}
+```
+
+
 
 # 其它
 
@@ -645,4 +735,91 @@ class Solution {
     }
 }
 ```
+
+## [面试题29. 顺时针打印矩阵](https://leetcode-cn.com/problems/shun-shi-zhen-da-yin-ju-zhen-lcof/)
+
+```java
+class Solution {
+    public int[] spiralOrder(int[][] matrix) {
+        if(matrix == null || matrix.length == 0 || matrix[0].length == 0) return new int[0];
+
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        int total = rows * cols;
+
+        int[] order = new int[total];
+        boolean[][] visited = new boolean[rows][cols];
+
+        int row = 0;
+        int col = 0;
+
+        int[][] dec = new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        int index = 0;
+
+        for (int i = 0; i < total; i++) {
+            order[i] = matrix[row][col];
+            visited[row][col] = true;
+
+            int nextRow = row + dec[index][0];
+            int nextCol = col + dec[index][1];
+
+            if(nextRow < 0 || nextRow >= rows || nextCol < 0 || nextCol >= cols || visited[nextRow][nextCol])
+                index = (index + 1) % 4;
+
+
+            col += dec[index][1];
+            row += dec[index][0];
+        }
+
+        return order;
+    }
+}
+```
+
+## [面试题03. 数组中重复的数字](https://leetcode-cn.com/problems/shu-zu-zhong-zhong-fu-de-shu-zi-lcof/)
+
+```java
+class Solution {
+    public int findRepeatNumber(int[] nums) {
+        Map<Integer, Boolean> map = new HashMap<>(nums.length * 2);
+
+        for (int i = 0; i < nums.length; i++) {
+            map.put(nums[i], map.containsKey(nums[i]));
+        }
+
+        for (int i = 0; i < nums.length; i++) {
+            if(map.get(nums[i])) return nums[i];
+        }
+
+        return 0;
+    }
+}
+```
+
+## [面试题04. 二维数组中的查找](https://leetcode-cn.com/problems/er-wei-shu-zu-zhong-de-cha-zhao-lcof/)
+
+```java
+class Solution {
+    public boolean findNumberIn2DArray(int[][] matrix, int target) {
+        if(matrix == null || matrix.length == 0 || matrix[0].length == 0) return false;
+
+        int rows = 0;
+        int cols = matrix[0].length - 1;
+
+        while(cols >=0 && rows <= matrix.length - 1) {
+            if(target > matrix[rows][cols]) {
+                rows += 1;
+            } else if(target <matrix[rows][cols]) {
+                cols -= 1;
+            } else {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+```
+
+
 
